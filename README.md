@@ -81,6 +81,60 @@ flowchart TD
     class Err401,Err403,ErrCreate403,ErrBuy400 error;
 ```
 
+### Frontend Architecture and Navigation Flow
+
+The frontend is built as a single-page React 19 application using local state variables for client-side routing. Navigation checks, conditional headers, page state routers, role-based controls, and view guards flow as follows:
+
+```mermaid
+flowchart TD
+    Init[Mount Application] --> ReadStorage[Read localStorage user object]
+    ReadStorage --> AuthCheck{User Logged In?}
+    
+    AuthCheck -->|No| AuthPage[Set currentPage = 'auth']
+    AuthPage --> AuthSection[Render AuthSection]
+    AuthSection -->|Submit Credentials| APIAuth[Call /api/auth/login or register]
+    APIAuth -->|Success| SaveStorage[Save User to localStorage & State]
+    SaveStorage --> NavigateMarketplace[Set currentPage = 'marketplace']
+    
+    AuthCheck -->|Yes| NavigateMarketplace
+    
+    NavigateMarketplace --> AppRender[Render Page Layout]
+    AppRender --> RenderNavbar[Render Navbar with Role Controls]
+    
+    RenderNavbar --> NavControls{User Role}
+    NavControls -->|Admin| AdminNavbar[Marketplace Tab, Admin Panel Tab, Logout]
+    NavControls -->|Standard User| UserNavbar[Marketplace Tab, My Projects Tab, Cart Badge, Logout]
+    
+    AppRender --> PageRouter{currentPage State}
+    
+    PageRouter -->|'auth'| RenderAuth[AuthSection Component]
+    
+    PageRouter -->|'marketplace'| RenderMarket[Hero Component & Listings Grid]
+    RenderMarket --> FormRole{Is Admin?}
+    FormRole -->|No| RenderForm[Render Sell Form]
+    FormRole -->|Yes| HideForm[Hide Sell Form]
+    
+    PageRouter -->|'projects'| GuardProjects{Is Admin?}
+    GuardProjects -->|Yes| RedirectMarket1[Redirect to 'marketplace']
+    GuardProjects -->|No| RenderProjList[Render MyProjectsList Component]
+    
+    PageRouter -->|'checkout'| GuardCheckout{Is Admin?}
+    GuardCheckout -->|Yes| RedirectMarket2[Redirect to 'marketplace']
+    GuardCheckout -->|No| RenderCheckout[Render CheckoutPage Component]
+    
+    PageRouter -->|'admin'| GuardAdmin{Is Admin?}
+    GuardAdmin -->|Yes| RenderAdmin[Render AdminDashboard Component]
+    GuardAdmin -->|No| RedirectMarket3[Redirect to 'marketplace']
+    
+    classDef init fill:#f8fafc,stroke:#cbd5e1,color:#0f172a;
+    classDef view fill:#f1f5f9,stroke:#94a3b8,color:#0f172a;
+    classDef flow fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a;
+    
+    class Init,ReadStorage,AuthCheck,NavControls,PageRouter,FormRole,GuardProjects,GuardCheckout,GuardAdmin init;
+    class AuthPage,NavigateMarketplace,RedirectMarket1,RedirectMarket2,RedirectMarket3 flow;
+    class AuthSection,RenderNavbar,AdminNavbar,UserNavbar,RenderAuth,RenderMarket,RenderForm,HideForm,RenderProjList,RenderCheckout,RenderAdmin view;
+```
+
 ---
 
 ## Key Features

@@ -36,6 +36,51 @@ flowchart TD
     class AdminFlow,Metrics,DevMgmt,ToggleRole,DeleteAccount,ProjMod,DeleteListing admin;
 ```
 
+### Backend Architecture and API Workflow
+
+The backend application is driven by Node.js, Express, and MongoDB. Secure access control checks, user/project model queries, role authorization checks, and cascading record deletion flow as follows:
+
+```mermaid
+flowchart TD
+    Client[Client Request] --> AuthGuard{Route Protected?}
+    
+    AuthGuard -->|No| PublicRoute[Execute Public Handler]
+    PublicRoute --> DB[Query MongoDB]
+    
+    AuthGuard -->|Yes| Protect[JWT authMiddleware]
+    Protect -->|Token Invalid/Missing| Err401[Return 401 Unauthorized]
+    Protect -->|Token Valid| SetUser[Attach req.user & Continue]
+    
+    SetUser --> AdminCheck{Route Admin-Only?}
+    
+    AdminCheck -->|Yes| CheckRole{req.user.role === admin?}
+    CheckRole -->|No| Err403[Return 403 Forbidden]
+    CheckRole -->|Yes| AdminRoute[Execute Admin Handler]
+    AdminRoute --> AdminAction{Action Type}
+    AdminAction -->|Toggle Role| DBUpdateUser[Update User Role]
+    AdminAction -->|Delete User| DBCascade[Delete User & Cascade Delete Projects]
+    AdminAction -->|Moderate Project| DBDeleteProject[Delete Project Listing]
+    
+    AdminCheck -->|No| StandardRoute{Standard/User Action}
+    StandardRoute -->|Create Listing| CheckCreate{Is Admin?}
+    CheckCreate -->|Yes| ErrCreate403[Return 403 Forbidden]
+    CheckCreate -->|No| DBCreate[Create Project in DB]
+    
+    StandardRoute -->|Purchase Listing| CheckBuy{Is Admin or Owner?}
+    CheckBuy -->|Yes| ErrBuy400[Return 400 Bad Request]
+    CheckBuy -->|No| DBClone[Clone Project Listing & Set Status to Saved]
+    
+    classDef auth fill:#f8fafc,stroke:#cbd5e1,color:#0f172a;
+    classDef handler fill:#f1f5f9,stroke:#94a3b8,color:#0f172a;
+    classDef db fill:#ecfdf5,stroke:#10b981,color:#065f46;
+    classDef error fill:#fef2f2,stroke:#f87171,color:#991b1b;
+    
+    class Client,AuthGuard,Protect,SetUser,AdminCheck,CheckRole,AdminAction,StandardRoute,CheckCreate,CheckBuy auth;
+    class PublicRoute,AdminRoute,DBUpdateUser,DBDeleteProject handler;
+    class DB,DBCascade,DBCreate,DBClone db;
+    class Err401,Err403,ErrCreate403,ErrBuy400 error;
+```
+
 ---
 
 ## Key Features

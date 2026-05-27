@@ -8,16 +8,16 @@ import {
   buyProject,
 } from "../controllers/projectController.js";
 
-import protect from "../middleware/authMiddleware.js";
+import protect, { userOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", protect, createProject);
+router.post("/", protect, userOnly, createProject);
 
 router.get("/", getProjects);
 
 router.delete("/:id", protect, deleteProject);
 
-router.post("/:id/buy", protect, buyProject);
+router.post("/:id/buy", protect, userOnly, buyProject);
 
 export default router;

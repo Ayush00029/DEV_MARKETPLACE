@@ -4,12 +4,6 @@ import Project from "../models/Project.js";
 // CREATE PROJECT
 export const createProject = async (req, res) => {
   try {
-    if (req.user.role === 'admin') {
-      return res.status(403).json({
-        message: "Administrators cannot list projects for sale",
-      });
-    }
-
     const {
       title,
       description,
@@ -165,14 +159,6 @@ export const buyProject = async (req, res) => {
         message: "Project template not found",
       });
     }
-
-    // Check if user is an admin
-    if (req.user.role === 'admin') {
-      return res.status(400).json({
-        message: "Administrators cannot purchase project codebases",
-      });
-    }
-
     // Check if buyer is already the owner
     if (project.owner.toString() === req.user._id.toString()) {
       return res.status(400).json({

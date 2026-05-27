@@ -39,4 +39,12 @@ export const adminOnly = (req, res, next) => {
   }
 };
 
+export const userOnly = (req, res, next) => {
+  if (req.user && req.user.role !== "admin") {
+    next();
+  } else {
+    res.status(403).json({ message: "Action restricted to standard developers" });
+  }
+};
+
 export default protect;

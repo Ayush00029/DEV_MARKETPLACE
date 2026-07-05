@@ -2,6 +2,11 @@
 
 A full-stack Developer Marketplace application built with the MERN stack (MongoDB, Express, React, Node.js). It features a robust backend with secure authentication, role-based access control, a visual shopping cart system, checkout sequencing, and an administration control panel.
 
+## Live Deployment
+
+- **Frontend Application**: [https://dev-marketplace-il2p.vercel.app](https://dev-marketplace-il2p.vercel.app)
+- **Backend API Server**: [https://dev-marketplace-alpha.vercel.app](https://dev-marketplace-alpha.vercel.app)
+
 ## Architecture and Workflow
 
 The following diagram illustrates the role-based workflow and feature paths for standard developers versus platform administrators:
